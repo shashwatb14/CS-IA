@@ -4,16 +4,36 @@
 
     Execution:
     javac .\Main.java
-    java -classpath ".;sqlite-jdbc.jar" Main
+    java -classpath ".;sqlite-jdbc-3.44.1.0.jar" Main
+
+    SQL Commands:
+
  */
 
 // Swing for GUI
-import javax.swing.*;
-import java.awt.*;
 
 public class Main {
     public static void main(String[] args) {
 
+        // create databases and set password for first-time use
+
+        /* DatabaseHandler databaseHandler = new DatabaseHandler();
+        try {
+            databaseHandler.connect("C:\\Shashwat\\school\\IB (2022 - 2024)\\CS\\CS-IA\\authentication.db");
+            System.out.println("Successfully connected to path!");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } */
+
+        // Authentication test
+        Authentication passwordEntry = new Authentication();
+        while (!passwordEntry.isSuccess()) {
+            if(passwordEntry.isSuccess()) break;
+        }
+        System.out.println("TEST");
+
+
+        /*
         // main window
         JFrame main = new JFrame();
 
@@ -25,6 +45,6 @@ public class Main {
         main.setVisible(true);
         main.setLayout(new BorderLayout());
         main.add(tabs, BorderLayout.NORTH);
-        main.setLocationRelativeTo(null);
+        main.setLocationRelativeTo(null);*/
     }
 }

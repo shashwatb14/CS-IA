@@ -34,19 +34,33 @@ public class DatabaseHandler {
     }
 
     // method for selection
-    // selects all records from chosen table
+    // selects all records from chosen table - only for viewing purposes
     public void selectAll(String tableName) {
         try {
             String sql = "SELECT * FROM " + tableName;
             Statement statement = this.connection.createStatement();
             ResultSet results = statement.executeQuery(sql);
+
+            // getting column count
+            // https://www.ibm.com/docs/en/db2-for-zos/11?topic=applications-learning-about-resultset-using-resultsetmetadata-methods
+            ResultSetMetaData resultsMetaData = results.getMetaData();
+            int columnCount = resultsMetaData.getColumnCount();
+
+            StringBuilder result = new StringBuilder();
+            for (int i = 1; i <= columnCount; i++) {
+                result.append(results.getString(i)).append(" | ");
+            }
+
             while (results.next()) {
-                System.out.println("Results: " + results.getString(1));
+                System.out.println("| " + result);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
+    // selects specific columns based on argument
+
 
     // method for insertion
     // multiple data types storage - https://stackoverflow.com/questions/26162183/java-multiple-type-data-structure

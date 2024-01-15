@@ -209,7 +209,16 @@ public class DatabaseHandler {
     public void reset(String tableName) {
 
         try {
-            this.connection.createStatement().execute("DROP TABLE " + tableName + "; UPDATE sqlite_sequence SET seq = 0 WHERE name = \"" + tableName + "\"");
+            this.connection.createStatement().execute("DELETE FROM " + tableName + "; UPDATE sqlite_sequence SET seq = 0 WHERE name = \"" + tableName + "\"");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // method for custom sql
+    public void customStatement(String statement) {
+        try {
+            this.connection.createStatement().executeQuery(statement);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

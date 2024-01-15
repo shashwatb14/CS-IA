@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class DatabaseHandler {
 
-    private Connection connection;
+    private final Connection connection;
 
     public DatabaseHandler(String path) {
         this.connection = this.connect(path);
@@ -110,10 +110,11 @@ public class DatabaseHandler {
     }
 
     // method for updating counter column for deletion/insertion
-    public void updateCounter(String tableName, String column) {
-        ResultSet results = this.select(tableName, false);
+    private void updateCounter(String tableName) {
 
         try {
+            ResultSet results = this.select(tableName, false);
+
             for (int i = 1; results.next(); i++) {
                 String sql = "UPDATE " + tableName + " SET counter = " + i + " WHERE id = " + results.getInt("id");
                 this.connection.createStatement().execute(sql);
@@ -150,7 +151,7 @@ public class DatabaseHandler {
 
             }
             preparedStatement.executeUpdate();
-            updateCounter(tableName, "counter");
+            updateCounter(tableName);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -159,9 +160,10 @@ public class DatabaseHandler {
     // method for deletion
     // deletes rows/records instance-wise
     public void delete(String tableName, String content) {
-        ResultSet results = this.select(tableName, false);
 
         try {
+
+            ResultSet results = this.select(tableName, false);
             int columnCount = results.getMetaData().getColumnCount();
 
             while (results.next()) {
@@ -174,7 +176,7 @@ public class DatabaseHandler {
                 }
             }
 
-            updateCounter(tableName, "counter");
+            updateCounter(tableName);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -187,7 +189,7 @@ public class DatabaseHandler {
             String statement = "DELETE FROM " + tableName + " WHERE id = " + index;
             System.out.println(statement);
             this.connection.createStatement().execute(statement);
-            updateCounter(tableName, "counter");
+            updateCounter(tableName);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

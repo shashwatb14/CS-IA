@@ -7,7 +7,7 @@
  * https://www.tutorialspoint.com/sqlite/sqlite_using_autoincrement.htm
  *
  * SQL Commands:
- * CREATE TABLE authentication(ID int NOT NULL PRIMARY KEY AUTOINCREMENT, encryptedText text NOT NULL);
+ * CREATE TABLE authentication(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, counter INTEGER, encryptedText text NOT NULL);
  */
 
 import java.sql.*;
@@ -109,6 +109,20 @@ public class DatabaseHandler {
         }
     }
 
+    // method for updating counter column for deletion/insertion
+    public void updateCounter(String tableName, String column) {
+        ResultSet results = this.select(tableName, false);
+
+        try {
+            for (int i = 1; results.next(); i++) {
+                String sql = "UPDATE " + tableName + " SET counter = " + i + " WHERE id = " + results.getInt("id");
+                this.connection.createStatement().execute(sql);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     // method for insertion
     // multiple data types storage - https://stackoverflow.com/questions/26162183/java-multiple-type-data-structure
     public void insert(String tableName, String columns, List<Object> values) {
@@ -136,6 +150,7 @@ public class DatabaseHandler {
 
             }
             preparedStatement.executeUpdate();
+            updateCounter(tableName, "counter");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -158,28 +173,46 @@ public class DatabaseHandler {
                     }
                 }
             }
+
+            updateCounter(tableName, "counter");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    // method for deletion but index-wise
+    // method for deletion but index-wise (primary key)
     public void delete(String tableName, int index) {
 
         try {
             String statement = "DELETE FROM " + tableName + " WHERE id = " + index;
             System.out.println(statement);
             this.connection.createStatement().execute(statement);
-
+            updateCounter(tableName, "counter");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    // method for update/replacement instance-wise
-    // replaces all instances
+    // method for update/replacement index-wise only (primary key)
+    public void update(String tableName, int index, String updatedContent) {
+
+        try {
+            String statement = "UPDATE " + tableName + " SET " + updatedContent + " WHERE counter = " + index;
+            System.out.println(statement);
+            this.connection.createStatement().execute(statement);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     // to reset autoincrement: https://stackoverflow.com/questions/1601697/sqlite-reset-primary-key-field
-    //this.connection.createStatement().execute("UPDATE sqlite_sequence SET seq = 0 WHERE name = \"" + tableName + "\"");
+    public void reset(String tableName) {
+
+        try {
+            this.connection.createStatement().execute("DROP TABLE " + tableName + "; UPDATE sqlite_sequence SET seq = 0 WHERE name = \"" + tableName + "\"");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }

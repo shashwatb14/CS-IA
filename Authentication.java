@@ -177,10 +177,9 @@ public class Authentication implements ActionListener {
             // write new secretKey and encodedText to database
             // generate secure key for AES encryption
             // source - https://stackoverflow.com/questions/51770704/java-aes-decryption-code-is-not-working-invalidexception-1234444
-            KeyGenerator keyGenerator;
 
             try {
-                keyGenerator = KeyGenerator.getInstance("AES");
+                KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
 
                 SecretKey secretKey = keyGenerator.generateKey();
 

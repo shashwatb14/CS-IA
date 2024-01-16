@@ -211,7 +211,8 @@ public class DatabaseHandler {
     public void reset(String tableName) {
 
         try {
-            this.connection.createStatement().execute("DELETE FROM " + tableName + "; UPDATE sqlite_sequence SET seq = 0 WHERE name = \"" + tableName + "\"");
+            this.connection.createStatement().execute("DELETE FROM " + tableName);
+            this.connection.createStatement().execute("UPDATE sqlite_sequence SET seq = 0 WHERE name = \"" + tableName + "\"");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

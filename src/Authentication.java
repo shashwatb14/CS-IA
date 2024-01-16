@@ -136,7 +136,7 @@ public class Authentication implements ActionListener {
             // reconstruct secret key
             // decipher from file
             // file to byte: https://stackoverflow.com/questions/858980/file-to-byte-in-java
-            byte[] fileByte = Files.readAllBytes(Path.of("C:\\Shashwat\\school\\IB (2022 - 2024)\\CS\\CS-IA\\src\\SecretFile.key"));
+            byte[] fileByte = Files.readAllBytes(Path.of("C:\\Shashwat\\school\\IB (2022 - 2024)\\CS\\CS-IA\\SecretFile.key"));
 
             // reconstructing secret key: https://stackoverflow.com/questions/5355466/converting-secret-key-into-a-string-and-vice-versa
             SecretKey newKey = new SecretKeySpec(fileByte, 0, fileByte.length, "AES");
@@ -184,7 +184,7 @@ public class Authentication implements ActionListener {
                 SecretKey secretKey = keyGenerator.generateKey();
 
                 // write key to file: https://stackoverflow.com/questions/54665348/how-to-store-secretkey-and-iv-in-a-single-file-for-aes-encryption-and-decryption
-                FileOutputStream outFile = new FileOutputStream("C:\\Shashwat\\school\\IB (2022 - 2024)\\CS\\CS-IA\\src\\SecretFile.key");
+                FileOutputStream outFile = new FileOutputStream("C:\\Shashwat\\school\\IB (2022 - 2024)\\CS\\CS-IA\\SecretFile.key");
                 byte[] key = secretKey.getEncoded();
                 outFile.write(key);
                 outFile.close();

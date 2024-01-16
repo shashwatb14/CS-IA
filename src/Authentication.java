@@ -45,10 +45,13 @@ public class Authentication implements ActionListener {
     private final JFrame FRAME = new JFrame("Authentication");
 
     // constructor
-    public Authentication() {
+    public Authentication(String title) {
 
         // main panel
         JPanel mainPanel = new JPanel();
+
+        // panel for title
+        JPanel titlePanel = new JPanel();
 
         // panel for input
         JPanel panel = new JPanel();
@@ -65,6 +68,9 @@ public class Authentication implements ActionListener {
         PASSWORD_FIELD.addActionListener(this);
         submitButton.addActionListener(this);
 
+        // add title to frame
+        titlePanel.add(new JLabel(title));
+
         // add password, label and button to panel
         panel.add(passwordLabel);
         panel.add(PASSWORD_FIELD);
@@ -73,7 +79,8 @@ public class Authentication implements ActionListener {
         RESULT = new JLabel("Enter Password");
         resultPanel.add(RESULT);
 
-        // merge two panels vertically
+        // merge panels vertically
+        mainPanel.add(titlePanel);
         mainPanel.add(panel);
         mainPanel.add(resultPanel);
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));

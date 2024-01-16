@@ -7,30 +7,42 @@
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Base64;
+import java.util.Map;
 
 public class Authentication implements ActionListener {
 
     // global password field attribute for actionPerformed method
-    private final JPasswordField passwordField;
+    private final JPasswordField PASSWORD_FIELD;
 
     // global result label field for updates
-    private final JLabel result;
+    private final JLabel RESULT;
 
     // determines access
     private boolean success = false;
 
+    // iv
+    private static final byte[] IV_BYTE = new byte[16];
+    private static final IvParameterSpec IV_PARAMETER_SPEC = new IvParameterSpec(IV_BYTE);
+
+    // database handler
+    private static final DatabaseHandler AUTH_APP = new DatabaseHandler("database.db");
+
     // encoded actual password
-    private final static String correct = "password"; // get password from database
+    private static final String CORRECT = decryptPassword(); // get password from database
 
     // main frame
-    JFrame frame = new JFrame("Authentication");
+    private final JFrame FRAME = new JFrame("Authentication");
 
     // constructor
     public Authentication() {
@@ -49,17 +61,17 @@ public class Authentication implements ActionListener {
         JButton submitButton = new JButton("Submit");
 
         // add action listeners to password field and button
-        passwordField = new JPasswordField(20);
-        passwordField.addActionListener(this);
+        PASSWORD_FIELD = new JPasswordField(20);
+        PASSWORD_FIELD.addActionListener(this);
         submitButton.addActionListener(this);
 
         // add password, label and button to panel
         panel.add(passwordLabel);
-        panel.add(passwordField);
+        panel.add(PASSWORD_FIELD);
         panel.add(submitButton);
 
-        result = new JLabel("Enter Password");
-        resultPanel.add(result);
+        RESULT = new JLabel("Enter Password");
+        resultPanel.add(RESULT);
 
         // merge two panels vertically
         mainPanel.add(panel);
@@ -67,25 +79,25 @@ public class Authentication implements ActionListener {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
         // configure frame
-        frame.setResizable(false); // disables maximize button
-        frame.setVisible(true);
-        frame.setLayout(new FlowLayout());
-        frame.add(mainPanel);
-        frame.pack();
-        frame.setLocationRelativeTo(null); // puts frame in the middle
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        FRAME.setResizable(false); // disables maximize button
+        FRAME.setVisible(true);
+        FRAME.setLayout(new FlowLayout());
+        FRAME.add(mainPanel);
+        FRAME.pack();
+        FRAME.setLocationRelativeTo(null); // puts frame in the middle
+        FRAME.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     }
 
     // validate password
     private boolean checkPassword(String password) {
-        return password.equals(correct);
+        return password.equals(CORRECT);
     }
 
     // encrypt password
     // need the same key for decryption - key only changes when password changes
     // Raised exceptions include: NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
     // IllegalBlockSizeException, BadPaddingException
-    private String encryptPassword(String password, SecretKey secretKey, IvParameterSpec ivParameterSpec) throws Exception {
+    private String encryptPassword(String password, SecretKey secretKey) throws Exception {
 
         // most of the code from Bard for encryption
         // given sources:
@@ -98,33 +110,51 @@ public class Authentication implements ActionListener {
 
         // initialize cipher object
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec); // int, key, iv
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, IV_PARAMETER_SPEC); // int, key, iv
 
         // encrypt and encode
         byte[] encryptedText = cipher.doFinal(plainText);
-        String encodedText = Base64.getEncoder().encodeToString(encryptedText);
 
-        System.out.println("Encrypted: " + encodedText);
-        return encodedText;
+        /*System.out.println(encodedText);
+        System.out.println(secretKey);
+        System.out.println(IV_PARAMETER_SPEC);*/
+
+        return Base64.getEncoder().encodeToString(encryptedText);
     }
 
     // painstakingly reverse-engineered
-    private String decryptPassword(String encodedText, SecretKey secretKey, IvParameterSpec ivParameterSpec) throws Exception {
+    private static String decryptPassword() {
         // initializing cipher object
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec); // initialization vector required
+        byte[] decryptedText;
 
-        byte[] encryptedText = Base64.getDecoder().decode(encodedText);
-        byte[] decryptedText = cipher.doFinal(encryptedText);
-        String result = new String(decryptedText, StandardCharsets.UTF_8);
+        try {
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 
-        System.out.println("Decrypted: " + result);
-        return result;
+            // database handler to retrieve password
+            Map<String, String> intel = AUTH_APP.select("authentication", new String[] {"encryptedText"}).get(0);
+
+            // reconstruct secret key
+            // decipher from file
+            // file to byte: https://stackoverflow.com/questions/858980/file-to-byte-in-java
+            byte[] fileByte = Files.readAllBytes(Path.of("C:\\Shashwat\\school\\IB (2022 - 2024)\\CS\\CS-IA\\SecretFile.key"));
+
+            // reconstructing secret key: https://stackoverflow.com/questions/5355466/converting-secret-key-into-a-string-and-vice-versa
+            SecretKey newKey = new SecretKeySpec(fileByte, 0, fileByte.length, "AES");
+
+            cipher.init(Cipher.DECRYPT_MODE, newKey, IV_PARAMETER_SPEC); // initialization vector required
+
+            byte[] encryptedText = Base64.getDecoder().decode(intel.get("encryptedText"));
+            decryptedText = cipher.doFinal(encryptedText);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return new String(decryptedText, StandardCharsets.UTF_8);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        char[] input = passwordField.getPassword();
+        char[] input = PASSWORD_FIELD.getPassword();
 
         // resetting every time action is performed
         StringBuilder password = new StringBuilder();
@@ -134,33 +164,41 @@ public class Authentication implements ActionListener {
             password.append(c);
         }
 
-        try {
-            // generate secure key for AES encryption
-            // source - https://stackoverflow.com/questions/51770704/java-aes-decryption-code-is-not-working-invalidexception-1234444
-            KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-            SecretKey secretKey = keyGenerator.generateKey();
-
-            byte[] iv = new byte[16]; // 16 bytes long
-            IvParameterSpec ivParameterSpec = new IvParameterSpec(iv); // set up iv
-
-            // System.out.println(secretKey);
-            System.out.println("What you typed: " + password);
-            String encrypted = encryptPassword(password.toString(), secretKey, ivParameterSpec);
-            decryptPassword(encrypted, secretKey, ivParameterSpec);
-
-        } catch (Exception exception) {
-            throw new RuntimeException(exception);
-        }
-
+        System.out.println("What you typed: " + password);
 
         if (!checkPassword(password.toString())) {
             // update text
-            result.setText("Wrong Password");
+            RESULT.setText("Wrong Password");
         } else {
             // give access and close window
-            result.setText("Correct Password");
+            RESULT.setText("Correct Password");
             this.success = true;
-            frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING)); // close window after giving access
+
+            // write new secretKey and encodedText to database
+            // generate secure key for AES encryption
+            // source - https://stackoverflow.com/questions/51770704/java-aes-decryption-code-is-not-working-invalidexception-1234444
+            KeyGenerator keyGenerator;
+
+            try {
+                keyGenerator = KeyGenerator.getInstance("AES");
+
+                SecretKey secretKey = keyGenerator.generateKey();
+
+                // write key to file: https://stackoverflow.com/questions/54665348/how-to-store-secretkey-and-iv-in-a-single-file-for-aes-encryption-and-decryption
+                FileOutputStream outFile = new FileOutputStream("C:\\Shashwat\\school\\IB (2022 - 2024)\\CS\\CS-IA\\SecretFile.key");
+                byte[] key = secretKey.getEncoded();
+                outFile.write(key);
+                outFile.close();
+
+                String encryptedText = encryptPassword(String.valueOf(password), secretKey);
+
+                // update database
+                AUTH_APP.update("authentication", 1, "encryptedText = \"" + encryptedText + "\"");
+
+            } catch (Exception exception) {
+                throw new RuntimeException(exception);
+            }
+            FRAME.dispatchEvent(new WindowEvent(FRAME, WindowEvent.WINDOW_CLOSING)); // close window after giving access
         }
     }
 

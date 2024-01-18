@@ -39,7 +39,7 @@ public class Authentication implements ActionListener {
     private static final DatabaseHandler AUTH_APP = new DatabaseHandler("database.db");
 
     // encoded actual password
-    private static final String CORRECT =  decryptPassword(); // get password from database
+    private static final String CORRECT = decryptPassword(); // get password from database
 
     // main frame
     private final JFrame FRAME = new JFrame("Authentication");

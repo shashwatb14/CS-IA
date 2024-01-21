@@ -26,9 +26,6 @@ public class Authentication implements ActionListener {
     // global result label field for updates
     private final JLabel RESULT;
 
-    // determines access
-    private boolean success = false;
-
     // iv
     private static final byte[] IV_BYTE = new byte[16];
     private static final IvParameterSpec IV_PARAMETER_SPEC = new IvParameterSpec(IV_BYTE);
@@ -42,8 +39,13 @@ public class Authentication implements ActionListener {
     // main frame
     private final JFrame FRAME = new JFrame("Authentication");
 
+    // callback interface for authentication purposes
+    private final AuthenticationCallback CALLBACK;
+
     // constructor
-    public Authentication(String title) {
+    public Authentication(String title, AuthenticationCallback callback) {
+
+        this.CALLBACK = callback;
 
         // main panel
         JPanel mainPanel = new JPanel();
@@ -148,7 +150,8 @@ public class Authentication implements ActionListener {
         // encrypt and encode
         byte[] encryptedText = cipher.doFinal(plainText);
 
-        /*System.out.println(encodedText);
+        /* debugging
+        System.out.println(encodedText);
         System.out.println(secretKey);
         System.out.println(IV_PARAMETER_SPEC);*/
 
@@ -207,7 +210,6 @@ public class Authentication implements ActionListener {
             // give access and close window
             RESULT.setText("Correct Password");
             RESULT.setForeground(Color.GREEN);
-            this.success = true;
 
             // write new secretKey and encodedText to database
             // generate secure key for AES encryption
@@ -232,11 +234,10 @@ public class Authentication implements ActionListener {
             } catch (Exception exception) {
                 throw new RuntimeException(exception);
             }
+
+            // call method on success
+            CALLBACK.onAuthenticationSuccess();
             FRAME.dispatchEvent(new WindowEvent(FRAME, WindowEvent.WINDOW_CLOSING)); // close window after giving access
         }
-    }
-
-    public boolean isSuccess() {
-        return this.success;
     }
 }

@@ -10,9 +10,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -67,6 +65,34 @@ public class Authentication implements ActionListener {
         PASSWORD_FIELD = new JPasswordField(20);
         PASSWORD_FIELD.addActionListener(this);
         submitButton.addActionListener(this);
+
+        // change mouse to pointer - https://stackoverflow.com/questions/7359189/how-to-change-the-mouse-cursor-in-java
+        submitButton.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                submitButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                submitButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                submitButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                submitButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                submitButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+        });
 
         // add title to frame
         titlePanel.add(new JLabel(title));
@@ -176,9 +202,11 @@ public class Authentication implements ActionListener {
         if (!checkPassword(password.toString())) {
             // update text
             RESULT.setText("Wrong Password");
+            RESULT.setForeground(Color.RED);
         } else {
             // give access and close window
             RESULT.setText("Correct Password");
+            RESULT.setForeground(Color.GREEN);
             this.success = true;
 
             // write new secretKey and encodedText to database

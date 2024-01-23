@@ -15,6 +15,8 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Base64;
 import java.util.Map;
 
@@ -22,6 +24,14 @@ public class Authentication implements ActionListener {
 
     // global password field attribute for actionPerformed method
     private final JPasswordField PASSWORD_FIELD;
+
+    // for action listener to create new password
+    private JPasswordField passwordField;
+    private JPasswordField confirmPassword;
+    private JButton createButton;
+    private JLabel newPasswordResult;
+
+    private static final int COLUMN_SIZE = 20;
 
     // global result label field for updates
     private final JLabel RESULT;
@@ -34,9 +44,9 @@ public class Authentication implements ActionListener {
     private static final DatabaseHandler AUTH_APP = new DatabaseHandler("database.db");
 
     // encoded actual password
-    private static final String CORRECT = decryptPassword(); // get password from database
+    private final String CORRECT = decryptPassword(); // get password from database
 
-    // main frame
+    // main frame - (try static for fun)
     private final JFrame FRAME = new JFrame("Authentication");
 
     // callback interface for authentication purposes
@@ -64,7 +74,7 @@ public class Authentication implements ActionListener {
         JButton submitButton = new JButton("Submit");
 
         // add action listeners to password field and button
-        PASSWORD_FIELD = new JPasswordField(20);
+        PASSWORD_FIELD = new JPasswordField(COLUMN_SIZE);
         PASSWORD_FIELD.addActionListener(this);
         submitButton.addActionListener(this);
 
@@ -115,7 +125,7 @@ public class Authentication implements ActionListener {
 
         // configure frame
         FRAME.setResizable(false); // disables maximize button
-        FRAME.setVisible(true);
+        FRAME.setVisible(!AUTH_APP.select("authentication", new String[]{"encryptedText"}).isEmpty()); // genius intellij
         FRAME.setLayout(new FlowLayout());
         FRAME.add(mainPanel);
         FRAME.pack();
@@ -132,7 +142,7 @@ public class Authentication implements ActionListener {
     // need the same key for decryption - key only changes when password changes
     // Raised exceptions include: NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
     // IllegalBlockSizeException, BadPaddingException
-    private String encryptPassword(String password, SecretKey secretKey) throws Exception {
+    private String encryptPassword(String password, SecretKey secretKey) {
 
         // most of the code from Bard for encryption
         // given sources:
@@ -144,11 +154,16 @@ public class Authentication implements ActionListener {
         byte[] plainText = password.getBytes(StandardCharsets.UTF_8);
 
         // initialize cipher object
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, IV_PARAMETER_SPEC); // int, key, iv
+        byte[] encryptedText;
+        try {
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, IV_PARAMETER_SPEC); // int, key, iv
 
-        // encrypt and encode
-        byte[] encryptedText = cipher.doFinal(plainText);
+            // encrypt and encode
+            encryptedText = cipher.doFinal(plainText);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         /* debugging
         System.out.println(encodedText);
@@ -159,9 +174,9 @@ public class Authentication implements ActionListener {
     }
 
     // painstakingly reverse-engineered
-    private static String decryptPassword() {
+    private String decryptPassword() {
         // initializing cipher object
-        byte[] decryptedText;
+        byte[] decryptedText = new byte[0];
 
         try {
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
@@ -181,6 +196,9 @@ public class Authentication implements ActionListener {
 
             byte[] encryptedText = Base64.getDecoder().decode(intel.get("encryptedText"));
             decryptedText = cipher.doFinal(encryptedText);
+        } catch (IndexOutOfBoundsException error) {
+            // first time password setup
+            setNewPassword();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -188,56 +206,183 @@ public class Authentication implements ActionListener {
         return new String(decryptedText, StandardCharsets.UTF_8);
     }
 
+    private void setNewPassword() {
+
+        // create GUI
+        JFrame setPasswordFrame = new JFrame();
+
+        // main password field
+        JPanel mainPanel = new JPanel();
+
+        // title panel
+        JPanel titlePanel = new JPanel();
+        titlePanel.add(new JLabel("Create new password"));
+
+        // inner password fields
+        JPanel passwordPanel = new JPanel();
+        JPanel confirmPanel = new JPanel();
+
+        passwordField = new JPasswordField(COLUMN_SIZE);
+        confirmPassword = new JPasswordField(COLUMN_SIZE);
+
+        passwordPanel.add(new JLabel("Enter password: "));
+        passwordPanel.add(passwordField);
+
+        confirmPanel.add(new JLabel("Confirm password: "));
+        confirmPanel.add(confirmPassword);
+
+        JPanel buttonPanel = new JPanel();
+        createButton = new JButton("Create password");
+        buttonPanel.add(createButton);
+
+        JPanel resultPanel = new JPanel();
+        newPasswordResult = new JLabel("Create new password");
+        resultPanel.add(newPasswordResult);
+
+        // decrypt and setNewPassword non-static because of action listeners
+        confirmPassword.addActionListener(this);
+        createButton.addActionListener(this);
+
+        mainPanel.add(titlePanel);
+        mainPanel.add(passwordPanel);
+        mainPanel.add(confirmPanel);
+        mainPanel.add(buttonPanel);
+        mainPanel.add(resultPanel);
+
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        setPasswordFrame.setResizable(false); // disables maximize button
+        setPasswordFrame.setVisible(true);
+        setPasswordFrame.setLayout(new FlowLayout());
+        setPasswordFrame.add(mainPanel);
+        setPasswordFrame.pack();
+        setPasswordFrame.setLocationRelativeTo(null); // puts frame in the middle
+        setPasswordFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    private SecretKey generateKey() {
+        try {
+            KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+            SecretKey secretKey = keyGenerator.generateKey();
+
+            // write key to file: https://stackoverflow.com/questions/54665348/how-to-store-secretkey-and-iv-in-a-single-file-for-aes-encryption-and-decryption
+            FileOutputStream outFile = new FileOutputStream("C:\\Shashwat\\school\\IB (2022 - 2024)\\CS\\CS-IA\\SecretFile.key");
+            byte[] key = secretKey.getEncoded();
+            outFile.write(key);
+            outFile.close();
+
+            return secretKey;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
-        char[] input = PASSWORD_FIELD.getPassword();
+        if (e.getSource() == confirmPassword || e.getSource() == createButton) {
+            System.out.println("Creating new password..."); // debugging
 
-        // resetting every time action is performed
-        StringBuilder password = new StringBuilder();
+            // constructing string
+            char[] password1 = passwordField.getPassword();
+            char[] password2 = confirmPassword.getPassword();
 
-        // constructing password as a string
-        for (char c : input) {
-            password.append(c);
-        }
+            // resetting every time action is performed
+            StringBuilder firstPassword = new StringBuilder();
+            StringBuilder secondPassword = new StringBuilder();
 
-        System.out.println("What you typed: " + password);
+            // constructing password as a string
+            for (int i = 0, n = Math.min(password1.length, password2.length); i < n; i++) {
+                firstPassword.append(password1[i]);
+                secondPassword.append(password2[i]);
+            }
 
-        if (!checkPassword(password.toString())) {
-            // update text
-            RESULT.setText("Wrong Password");
-            RESULT.setForeground(Color.RED);
+            System.out.println("1st: " + firstPassword);
+            System.out.println("2nd: " + secondPassword);
+
+            // validation and confirmation checks
+            if (firstPassword.length() < 3 || firstPassword.length() > 20 ||
+                secondPassword.length() < 3 || secondPassword.length() > 20) {
+
+                System.out.println("Invalid length"); // debugging
+
+                newPasswordResult.setText("Invalid Length");
+                newPasswordResult.setForeground(Color.RED);
+
+            } else if (firstPassword.toString().length() != secondPassword.toString().length()) {
+                System.out.println("Different lengths for password...");
+
+                System.out.println(firstPassword.toString().length());
+                System.out.println(secondPassword.toString().length());
+
+                newPasswordResult.setText("Passwords do not match");
+                newPasswordResult.setForeground(Color.RED);
+
+            } else if (firstPassword.toString().contentEquals(secondPassword)) { // string builders need to be converted to string
+                System.out.println("Success! Creating new password..."); // debugging
+
+                // update database
+                SecretKey secretKey = generateKey();
+                String encryptedText = encryptPassword(String.valueOf(firstPassword), secretKey);
+
+                List<Object> encryptedPassword = new ArrayList<>();
+                encryptedPassword.add(encryptedText);
+
+                AUTH_APP.insert("authentication", "encryptedText", encryptedPassword);
+
+                newPasswordResult.setText("Success");
+                newPasswordResult.setForeground(Color.GREEN);
+
+                CALLBACK.onAuthenticationSuccess();
+                FRAME.dispatchEvent(new WindowEvent(FRAME, WindowEvent.WINDOW_CLOSING));
+
+            } else {
+                newPasswordResult.setText("Passwords do not match");
+                newPasswordResult.setForeground(Color.RED);
+            }
+
         } else {
-            // give access and close window
-            RESULT.setText("Correct Password");
-            RESULT.setForeground(Color.GREEN);
+            char[] input = PASSWORD_FIELD.getPassword();
 
-            // write new secretKey and encodedText to database
-            // generate secure key for AES encryption
-            // source - https://stackoverflow.com/questions/51770704/java-aes-decryption-code-is-not-working-invalidexception-1234444
+            // resetting every time action is performed
+            StringBuilder password = new StringBuilder();
 
-            try {
-                KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+            // constructing password as a string
+            for (char c : input) {
+                password.append(c);
+            }
 
-                SecretKey secretKey = keyGenerator.generateKey();
+            System.out.println("What you typed: " + password);
 
-                // write key to file: https://stackoverflow.com/questions/54665348/how-to-store-secretkey-and-iv-in-a-single-file-for-aes-encryption-and-decryption
-                FileOutputStream outFile = new FileOutputStream("C:\\Shashwat\\school\\IB (2022 - 2024)\\CS\\CS-IA\\SecretFile.key");
-                byte[] key = secretKey.getEncoded();
-                outFile.write(key);
-                outFile.close();
+            if (!checkPassword(password.toString())) {
+                // update text
+                RESULT.setText("Wrong Password");
+                RESULT.setForeground(Color.RED);
+            } else {
+                // give access and close window
+                RESULT.setText("Correct Password");
+                RESULT.setForeground(Color.GREEN);
+
+                // write new secretKey and encodedText to database
+                // generate secure key for AES encryption
+                // source - https://stackoverflow.com/questions/51770704/java-aes-decryption-code-is-not-working-invalidexception-1234444
+
+                SecretKey secretKey = generateKey();
 
                 String encryptedText = encryptPassword(String.valueOf(password), secretKey);
+
+                /* for reset/debugging
+                List<Object> encryptedPassword = new ArrayList<>();
+                encryptedPassword.add(encryptedText);
+                AUTH_APP.insert("authentication", "encryptedText", encryptedPassword);*/
 
                 // update database
                 AUTH_APP.update("authentication", 1, "encryptedText = \"" + encryptedText + "\"");
 
-            } catch (Exception exception) {
-                throw new RuntimeException(exception);
+                // call method on success
+                CALLBACK.onAuthenticationSuccess();
+                FRAME.dispatchEvent(new WindowEvent(FRAME, WindowEvent.WINDOW_CLOSING)); // close window after giving access
             }
-
-            // call method on success
-            CALLBACK.onAuthenticationSuccess();
-            FRAME.dispatchEvent(new WindowEvent(FRAME, WindowEvent.WINDOW_CLOSING)); // close window after giving access
         }
     }
 }

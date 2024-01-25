@@ -18,7 +18,8 @@ public class Section implements ActionListener {
 
     private final JButton MAIN_BUTTON = new JButton(); // clickable panels
     private final JButton EDIT_BUTTON = new JButton("Edit");
-    private final JButton DELETE_BUTTON = new JButton("Delete");
+    private final JButton ARCHIVE_BUTTON = new JButton("Archive");
+    private final DatabaseHandler DATABASE;
 
     // section title
     private final String SECTION_NAME;
@@ -27,11 +28,12 @@ public class Section implements ActionListener {
     private final JPanel CARDS;
 
 
-    public Section(String title, boolean locked, JPanel panel, JPanel cards) {
+    public Section(String title, boolean locked, JPanel panel, JPanel cards, DatabaseHandler database) {
 
         this.LOCKED = locked;
         this.SECTION_NAME = title;
         this.CARDS = cards;
+        this.DATABASE = database;
 
         // styling buttons: https://stackoverflow.com/questions/4898584/java-using-an-image-as-a-button
         MAIN_BUTTON.setContentAreaFilled(false);
@@ -57,7 +59,7 @@ public class Section implements ActionListener {
         MAIN_BUTTON.add(lockPanel);
 
         EDIT_BUTTON.addActionListener(this);
-        DELETE_BUTTON.addActionListener(this);
+        ARCHIVE_BUTTON.addActionListener(this);
         MAIN_BUTTON.addActionListener(this);
 
         // update cursor to pointer
@@ -89,7 +91,7 @@ public class Section implements ActionListener {
         });
 
         buttonsPanel.add(EDIT_BUTTON);
-        buttonsPanel.add(DELETE_BUTTON);
+        buttonsPanel.add(ARCHIVE_BUTTON);
         MAIN_BUTTON.add(buttonsPanel);
 
         MAIN_BUTTON.setLayout(new BoxLayout(MAIN_BUTTON, BoxLayout.Y_AXIS));
@@ -115,7 +117,7 @@ public class Section implements ActionListener {
                 }
 
                 // delete section
-                else if (e.getSource() == DELETE_BUTTON) {
+                else if (e.getSource() == ARCHIVE_BUTTON) {
                     System.out.println("Deleting " + this.SECTION_NAME);
                 }
 
@@ -124,7 +126,7 @@ public class Section implements ActionListener {
                 // card layout and switching: https://docs.oracle.com/javase%2Ftutorial%2Fuiswing%2F%2F/layout/card.html
                 CardLayout cardLayout = (CardLayout) (CARDS.getLayout());
                 cardLayout.show(CARDS, SECTION_NAME);
-            });
+            }, DATABASE);
         }
 
         else {
@@ -135,7 +137,7 @@ public class Section implements ActionListener {
             }
 
             // delete section
-            else if (e.getSource() == DELETE_BUTTON) {
+            else if (e.getSource() == ARCHIVE_BUTTON) {
                 System.out.println("Deleting " + this.SECTION_NAME);
             }
 

@@ -5,9 +5,12 @@
  * https://www.javatpoint.com/java-sqlite
  * https://www.codejava.net/java-se/jdbc/connect-to-sqlite-via-jdbc
  * https://www.tutorialspoint.com/sqlite/sqlite_using_autoincrement.htm
+ * https://www.sqlite.org/foreignkeys.html
  *
  * SQL Commands:
- * CREATE TABLE authentication(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, counter INTEGER, encryptedText text NOT NULL);
+ * CREATE TABLE authentication(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, counter INTEGER, encryptedText TEXT NOT NULL);
+ * CREATE TABLE sections(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, counter INTEGER, sectionTitle TEXT NOT NULL, isLocked TEXT NOT NULL);
+ * CREATE TABLE notes(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, counter INTEGER, section_id INTEGER, content TEXT NOT NULL, FOREIGN KEY(section_id) REFERENCES sections(id));
  */
 
 import java.sql.*;
@@ -46,9 +49,9 @@ public class DatabaseHandler {
     public ResultSet select(String tableName, boolean display) {
 
         String sql = "SELECT * FROM " + tableName;
-
+        ResultSet results;
         try {
-            ResultSet results = this.connection.createStatement().executeQuery(sql);
+            results = this.connection.createStatement().executeQuery(sql);
 
             // getting column count
             // https://www.ibm.com/docs/en/db2-for-zos/11?topic=applications-learning-about-resultset-using-resultsetmetadata-methods
@@ -146,8 +149,7 @@ public class DatabaseHandler {
                 // can only be either string for this prototype
                 if (values.get(i).getClass().getName().equals("java.lang.String")) {
                     preparedStatement.setString(i + 1, values.get(i).toString());
-                }
-                // if double - else preparedStatement.setDouble(i + 1, (double) values.get(i));
+                } else preparedStatement.setDouble(i + 1, (int) values.get(i));
 
             }
             preparedStatement.executeUpdate();
@@ -219,12 +221,23 @@ public class DatabaseHandler {
     }
 
     // method for custom sql
-    public void customStatement(String statement) {
+    public ResultSet customStatement(String statement) {
+        ResultSet resultSet;
+
         try {
-            this.connection.createStatement().executeQuery(statement);
+            resultSet = this.connection.createStatement().executeQuery(statement);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return resultSet;
+    }
+
+    public void customStatementVoid(String statement) {
+
+        try {
+            this.connection.createStatement().execute(statement);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-
 }

@@ -30,6 +30,7 @@ public class Authentication implements ActionListener {
     private JPasswordField confirmPassword;
     private JButton createButton;
     private JLabel newPasswordResult;
+    private JFrame setPasswordFrame;
 
     private static final int COLUMN_SIZE = 20;
 
@@ -41,10 +42,10 @@ public class Authentication implements ActionListener {
     private static final IvParameterSpec IV_PARAMETER_SPEC = new IvParameterSpec(IV_BYTE);
 
     // database handler
-    private static final DatabaseHandler AUTH_APP = new DatabaseHandler("database.db");
+    private static DatabaseHandler authApp;
 
     // encoded actual password
-    private final String CORRECT = decryptPassword(); // get password from database
+    private final String CORRECT;
 
     // main frame - (try static for fun)
     private final JFrame FRAME = new JFrame("Authentication");
@@ -53,9 +54,11 @@ public class Authentication implements ActionListener {
     private final AuthenticationCallback CALLBACK;
 
     // constructor
-    public Authentication(String title, AuthenticationCallback callback) {
+    public Authentication(String title, AuthenticationCallback callback, DatabaseHandler database) {
 
         this.CALLBACK = callback;
+        authApp = database;
+        this.CORRECT = decryptPassword(); // get password from database
 
         // main panel
         JPanel mainPanel = new JPanel();
@@ -125,7 +128,7 @@ public class Authentication implements ActionListener {
 
         // configure frame
         FRAME.setResizable(false); // disables maximize button
-        FRAME.setVisible(!AUTH_APP.select("authentication", new String[]{"encryptedText"}).isEmpty()); // genius intellij
+        FRAME.setVisible(!authApp.select("authentication", new String[]{"encryptedText"}).isEmpty()); // genius intellij
         FRAME.setLayout(new FlowLayout());
         FRAME.add(mainPanel);
         FRAME.pack();
@@ -182,7 +185,7 @@ public class Authentication implements ActionListener {
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 
             // database handler to retrieve password
-            Map<String, String> intel = AUTH_APP.select("authentication", new String[] {"encryptedText"}).get(0);
+            Map<String, String> intel = authApp.select("authentication", new String[] {"encryptedText"}).get(0);
 
             // reconstruct secret key
             // decipher from file
@@ -209,7 +212,7 @@ public class Authentication implements ActionListener {
     private void setNewPassword() {
 
         // create GUI
-        JFrame setPasswordFrame = new JFrame();
+        setPasswordFrame = new JFrame();
 
         // main password field
         JPanel mainPanel = new JPanel();
@@ -258,7 +261,7 @@ public class Authentication implements ActionListener {
         setPasswordFrame.add(mainPanel);
         setPasswordFrame.pack();
         setPasswordFrame.setLocationRelativeTo(null); // puts frame in the middle
-        setPasswordFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setPasswordFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     }
 
     private SecretKey generateKey() {
@@ -328,13 +331,13 @@ public class Authentication implements ActionListener {
                 List<Object> encryptedPassword = new ArrayList<>();
                 encryptedPassword.add(encryptedText);
 
-                AUTH_APP.insert("authentication", "encryptedText", encryptedPassword);
+                authApp.insert("authentication", "encryptedText", encryptedPassword);
 
                 newPasswordResult.setText("Success");
                 newPasswordResult.setForeground(Color.GREEN);
 
                 CALLBACK.onAuthenticationSuccess();
-                FRAME.dispatchEvent(new WindowEvent(FRAME, WindowEvent.WINDOW_CLOSING));
+                setPasswordFrame.dispatchEvent(new WindowEvent(setPasswordFrame, WindowEvent.WINDOW_CLOSING));
 
             } else {
                 newPasswordResult.setText("Passwords do not match");
@@ -377,7 +380,7 @@ public class Authentication implements ActionListener {
                 AUTH_APP.insert("authentication", "encryptedText", encryptedPassword);*/
 
                 // update database
-                AUTH_APP.update("authentication", 1, "encryptedText = \"" + encryptedText + "\"");
+                authApp.update("authentication", 1, "encryptedText = \"" + encryptedText + "\"");
 
                 // call method on success
                 CALLBACK.onAuthenticationSuccess();

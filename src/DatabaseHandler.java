@@ -74,7 +74,6 @@ public class DatabaseHandler {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     // selects specific columns based on argument
@@ -95,7 +94,8 @@ public class DatabaseHandler {
             ResultSet resultSet = this.connection.createStatement().executeQuery(sql);
 
             // using just list for initialization gives more flexibility
-            List<Map> records = new ArrayList<>(); // using dynamic arraylist - no need to specify length before usage
+            // using dynamic arraylist - no need to specify length before usage
+            List<Map> records = new ArrayList<>();
 
             for (int i = 0; resultSet.next(); i++) {
                 Map<String, String> results = new HashMap<>();
@@ -119,7 +119,8 @@ public class DatabaseHandler {
             ResultSet results = this.select(tableName, false);
 
             for (int i = 1; results.next(); i++) {
-                String sql = "UPDATE " + tableName + " SET counter = " + i + " WHERE id = " + results.getInt("id");
+                String sql = "UPDATE " + tableName + " SET counter = " + i +
+                             " WHERE id = " + results.getInt("id");
                 this.connection.createStatement().execute(sql);
             }
         } catch (SQLException e) {
@@ -171,7 +172,8 @@ public class DatabaseHandler {
             while (results.next()) {
                 for (int i = 1; i <= columnCount; i++) {
                     if (results.getString(i).equals(content)) {
-                        String statement = "DELETE FROM " + tableName + " WHERE " + results.getMetaData().getColumnName(i) + " = \"" + content + "\"";
+                        String statement = "DELETE FROM " + tableName + " WHERE " +
+                                            results.getMetaData().getColumnName(i) + " = \"" + content + "\"";
                         System.out.println(statement);
                         this.connection.createStatement().execute(statement);
                     }

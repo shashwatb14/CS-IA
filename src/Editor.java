@@ -198,7 +198,7 @@ public class Editor implements KeyListener, ActionListener {
     public void keyPressed(KeyEvent e) {
         // System.out.println(e.getKeyChar());
 
-        // auto complete bracket and quotes functionality
+        // auto complete bracket functionality: https://stackoverflow.com/questions/11442471/press-a-key-with-java
         switch (e.getKeyChar()) {
             case '(' -> {
                 Robot r;

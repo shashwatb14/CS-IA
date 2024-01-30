@@ -161,7 +161,7 @@ public class Editor implements KeyListener, ActionListener {
                 }
             }
         });
-        EDITOR_PANE.setFont(new Font("Poppins", Font.PLAIN, 12));
+        EDITOR_PANE.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
         EDITOR_PANE.setText(convertTextToHtml(content)); // https://www.tutorialspoint.com/how-to-set-font-for-text-in-jtextpane-with-java
         EDITOR_PANE.addKeyListener(this);
         EDITOR_PANE.setEditable(false);
@@ -197,6 +197,44 @@ public class Editor implements KeyListener, ActionListener {
     @Override
     public void keyPressed(KeyEvent e) {
         // System.out.println(e.getKeyChar());
+
+        // auto complete bracket and quotes functionality
+        switch (e.getKeyChar()) {
+            case '(' -> {
+                Robot r;
+                try {
+                    r = new Robot();
+                } catch (AWTException ex) {
+                    throw new RuntimeException(ex);
+                }
+                r.keyPress(KeyEvent.VK_SHIFT);
+                r.keyPress(KeyEvent.VK_0);
+                r.keyRelease(KeyEvent.VK_SHIFT);
+                r.keyRelease(KeyEvent.VK_0);
+            }
+            case '{' -> {
+                Robot r;
+                try {
+                    r = new Robot();
+                } catch (AWTException ex) {
+                    throw new RuntimeException(ex);
+                }
+                r.keyPress(KeyEvent.VK_SHIFT);
+                r.keyPress(KeyEvent.VK_CLOSE_BRACKET);
+                r.keyRelease(KeyEvent.VK_SHIFT);
+                r.keyRelease(KeyEvent.VK_CLOSE_BRACKET);
+            }
+            case '[' -> {
+                Robot r;
+                try {
+                    r = new Robot();
+                } catch (AWTException ex) {
+                    throw new RuntimeException(ex);
+                }
+                r.keyPress(KeyEvent.VK_CLOSE_BRACKET);
+                r.keyRelease(KeyEvent.VK_CLOSE_BRACKET);
+            }
+        }
     }
 
     @Override

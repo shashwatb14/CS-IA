@@ -126,7 +126,7 @@ public class DatabaseHandler {
 
             for (int i = 1; results.next(); i++) {
                 String sql = "UPDATE " + tableName + " SET counter = " + i +
-                             " WHERE id = " + results.getInt("id");
+                        " WHERE id = " + results.getInt("id");
                 this.connection.createStatement().execute(sql);
             }
         } catch (SQLException e) {
@@ -179,7 +179,7 @@ public class DatabaseHandler {
                 for (int i = 1; i <= columnCount; i++) {
                     if (results.getString(i).equals(content)) {
                         String statement = "DELETE FROM " + tableName + " WHERE " +
-                                            results.getMetaData().getColumnName(i) + " = \"" + content + "\"";
+                                results.getMetaData().getColumnName(i) + " = \"" + content + "\"";
                         System.out.println(statement);
                         this.connection.createStatement().execute(statement);
                     }

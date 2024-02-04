@@ -249,9 +249,7 @@ public class Authentication implements ActionListener {
         if (e.getSource() == passwordField) {
             // change focus to confirmPassword: https://stackoverflow.com/questions/1425392/how-do-you-set-a-focus-on-jtextfield-in-swing
             confirmPassword.requestFocus();
-        }
-
-        else if (e.getSource() == confirmPassword || e.getSource() == createButton) {
+        } else if (e.getSource() == confirmPassword || e.getSource() == createButton) {
             System.out.println("Creating new password..."); // debugging
 
             // constructing string

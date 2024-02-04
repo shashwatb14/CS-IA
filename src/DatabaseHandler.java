@@ -11,6 +11,12 @@
  * CREATE TABLE authentication(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, counter INTEGER, encryptedText TEXT NOT NULL);
  * CREATE TABLE sections(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, counter INTEGER, sectionTitle TEXT NOT NULL, isLocked TEXT NOT NULL);
  * CREATE TABLE notes(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, counter INTEGER, section_id INTEGER, content TEXT NOT NULL, FOREIGN KEY(section_id) REFERENCES sections(id));
+ * CREATE TABLE archive(id INTEGER NOT NULL, counter INTEGER, sectionTitle TEXT NOT NULL, isLocked TEXT NOT NULL);
+   INSERT INTO sections(sectionTitle, isLocked) VALUES('Personal Information', 'TRUE');
+   INSERT INTO sections(sectionTitle, isLocked) VALUES('Individual Productivity', 'FALSE');
+   INSERT INTO sections(sectionTitle, isLocked) VALUES('Office Workspace', 'FALSE');
+   INSERT INTO sections(sectionTitle, isLocked) VALUES('Self-Learning', 'FALSE');
+   INSERT INTO sections(sectionTitle, isLocked) VALUES('Family Travel', 'FALSE');
  */
 
 import java.sql.*;
@@ -223,21 +229,23 @@ public class DatabaseHandler {
     }
 
     // method for custom sql
-    public ResultSet customStatement(String statement) {
+    public ResultSet customStatement(String tableName, String statement) {
         ResultSet resultSet;
 
         try {
             resultSet = this.connection.createStatement().executeQuery(statement);
+            updateCounter(tableName);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         return resultSet;
     }
 
-    public void customStatementVoid(String statement) {
+    public void customStatementVoid(String tableName, String statement) {
 
         try {
             this.connection.createStatement().execute(statement);
+            updateCounter(tableName);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

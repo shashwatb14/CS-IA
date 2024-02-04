@@ -32,39 +32,16 @@ public class Editor implements KeyListener, ActionListener {
         this.DATABASE = database;
 
         try {
-            this.SECTION_ID = DATABASE.customStatement("SELECT id FROM sections WHERE sectionTitle = \"" + sectionTitle + "\"").getInt("id");
+            this.SECTION_ID = DATABASE.customStatement(
+                    "sections",
+                    "SELECT id FROM sections WHERE sectionTitle = \"" + sectionTitle + "\""
+            ).getInt("id");
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
 
         CONTENT.setLayout(new BorderLayout());
-
-        EDITOR_PANE.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                EDITOR_PANE.setCursor(new Cursor(Cursor.TEXT_CURSOR));
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                EDITOR_PANE.setCursor(new Cursor(Cursor.TEXT_CURSOR));
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                EDITOR_PANE.setCursor(new Cursor(Cursor.TEXT_CURSOR));
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                EDITOR_PANE.setCursor(new Cursor(Cursor.TEXT_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                EDITOR_PANE.setCursor(new Cursor(Cursor.TEXT_CURSOR));
-            }
-        });
+        Main.changeCursor(EDITOR_PANE, new Cursor(Cursor.TEXT_CURSOR));
 
         JPanel titlePanel = new JPanel();
         titlePanel.add(new JLabel((index + ". " + sectionTitle)));
@@ -84,13 +61,13 @@ public class Editor implements KeyListener, ActionListener {
         JPanel buttonsLabel = new JPanel();
         buttonsLabel.setLayout(new BoxLayout(buttonsLabel, BoxLayout.Y_AXIS));
         buttonsLabel.add(new JLabel("Click to copy to clipboard:"));
-        buttonsLabel.add(Box.createRigidArea(new Dimension(0,5)));
+        buttonsLabel.add(Box.createRigidArea(new Dimension(0, 5)));
 
         buttonPanel.setLayout(new BorderLayout());
         buttonPanel.add(buttonsLabel, BorderLayout.NORTH);
 
         COPY_BUTTONS.setLayout(new FlowLayout());
-        COPY_BUTTONS.add(Box.createRigidArea(new Dimension(5,0)));
+        COPY_BUTTONS.add(Box.createRigidArea(new Dimension(5, 0)));
 
         JPanel copyButtonsPanel = new JPanel();
         copyButtonsPanel.setLayout(new BoxLayout(copyButtonsPanel, BoxLayout.Y_AXIS));
@@ -107,36 +84,11 @@ public class Editor implements KeyListener, ActionListener {
 
         EDIT_BUTTON = new JButton("Edit");
         EDIT_BUTTON.addActionListener(this);
-        EDIT_BUTTON.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                EDIT_BUTTON.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                EDIT_BUTTON.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                EDIT_BUTTON.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                EDIT_BUTTON.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                EDIT_BUTTON.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-        });
+        Main.changeCursor(EDIT_BUTTON, new Cursor(Cursor.HAND_CURSOR));
 
         JPanel editPanel = new JPanel();
         editPanel.setLayout(new BoxLayout(editPanel, BoxLayout.Y_AXIS));
-        editPanel.add(Box.createRigidArea(new Dimension(0,5)));
+        editPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         editPanel.add(EDIT_BUTTON);
 
         CONTENT.add(titlePanel, BorderLayout.NORTH);
@@ -161,7 +113,7 @@ public class Editor implements KeyListener, ActionListener {
                 }
             }
         });
-        EDITOR_PANE.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
+        EDITOR_PANE.setFont(new Font(Font.SERIF, Font.PLAIN, 14));
         EDITOR_PANE.setText(convertTextToHtml(content)); // https://www.tutorialspoint.com/how-to-set-font-for-text-in-jtextpane-with-java
         EDITOR_PANE.addKeyListener(this);
         EDITOR_PANE.setEditable(false);
@@ -188,7 +140,7 @@ public class Editor implements KeyListener, ActionListener {
     @Override
     public void keyTyped(KeyEvent e) {
 
-        if (e.getKeyChar()=='/') {
+        if (e.getKeyChar() == '/') {
             System.out.println("FORMULA");
         }
         // get text: https://stackoverflow.com/questions/40855387/how-to-get-the-text-of-a-textarea-when-button-is-clicked-in-java
@@ -197,7 +149,6 @@ public class Editor implements KeyListener, ActionListener {
     @Override
     public void keyPressed(KeyEvent e) {
         // System.out.println(e.getKeyChar());
-
         // auto complete bracket functionality: https://stackoverflow.com/questions/11442471/press-a-key-with-java
         switch (e.getKeyChar()) {
             case '(' -> {
@@ -211,6 +162,8 @@ public class Editor implements KeyListener, ActionListener {
                 r.keyPress(KeyEvent.VK_0);
                 r.keyRelease(KeyEvent.VK_SHIFT);
                 r.keyRelease(KeyEvent.VK_0);
+                r.keyPress(KeyEvent.VK_LEFT);
+                r.keyRelease(KeyEvent.VK_LEFT);
             }
             case '{' -> {
                 Robot r;
@@ -223,6 +176,8 @@ public class Editor implements KeyListener, ActionListener {
                 r.keyPress(KeyEvent.VK_CLOSE_BRACKET);
                 r.keyRelease(KeyEvent.VK_SHIFT);
                 r.keyRelease(KeyEvent.VK_CLOSE_BRACKET);
+                r.keyPress(KeyEvent.VK_LEFT);
+                r.keyRelease(KeyEvent.VK_LEFT);
             }
             case '[' -> {
                 Robot r;
@@ -233,6 +188,8 @@ public class Editor implements KeyListener, ActionListener {
                 }
                 r.keyPress(KeyEvent.VK_CLOSE_BRACKET);
                 r.keyRelease(KeyEvent.VK_CLOSE_BRACKET);
+                r.keyPress(KeyEvent.VK_LEFT);
+                r.keyRelease(KeyEvent.VK_LEFT);
             }
         }
     }
@@ -289,11 +246,13 @@ public class Editor implements KeyListener, ActionListener {
         record.add(content);
 
         try {
-            if (DATABASE.customStatement("SELECT * FROM notes WHERE section_id = " + this.SECTION_ID)
-                    .getString("content") == null) {
+            if (DATABASE.customStatement(
+                    "notes",
+                    "SELECT * FROM notes WHERE section_id = " + this.SECTION_ID
+            ).getString("content") == null) {
                 DATABASE.insert("notes", "section_id, content", record);
             } else {
-                DATABASE.customStatementVoid("UPDATE notes SET content = \"" + content +
+                DATABASE.customStatementVoid("notes", "UPDATE notes SET content = \"" + content +
                         "\" WHERE section_id = " + this.SECTION_ID);
             }
         } catch (SQLException ex) {
@@ -304,7 +263,10 @@ public class Editor implements KeyListener, ActionListener {
     private String getContent() {
         String content;
         try {
-            content = DATABASE.customStatement("SELECT content FROM notes WHERE section_id = " + this.SECTION_ID).getString("content");
+            content = DATABASE.customStatement(
+                    "notes",
+                    "SELECT content FROM notes WHERE section_id = " + this.SECTION_ID
+            ).getString("content");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -312,6 +274,7 @@ public class Editor implements KeyListener, ActionListener {
     }
 
     private String convertFormulas(String content) {
+        if (content == null) return "";
         StringBuilder html = new StringBuilder();
         char[] chars = content.toCharArray();
         int n = chars.length;
@@ -367,36 +330,11 @@ public class Editor implements KeyListener, ActionListener {
                     }
                     JButton jButton = new JButton(content.substring(i + LEN, end));
                     jButton.addActionListener(this);
-                    jButton.addMouseListener(new MouseListener() {
-                        @Override
-                        public void mouseClicked(MouseEvent e) {
-                            jButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                        }
-
-                        @Override
-                        public void mousePressed(MouseEvent e) {
-                            jButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                        }
-
-                        @Override
-                        public void mouseReleased(MouseEvent e) {
-                            jButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                        }
-
-                        @Override
-                        public void mouseEntered(MouseEvent e) {
-                            jButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                        }
-
-                        @Override
-                        public void mouseExited(MouseEvent e) {
-                            jButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                        }
-                    });
+                    Main.changeCursor(jButton, new Cursor(Cursor.HAND_CURSOR));
 
                     COPY_BUTTONS.add(jButton);
                     html.append("<code><span style=\"background-color: #DDDDDD;\">")
-                        .append(content, i + LEN, end).append("</span></code>");
+                            .append(content, i + LEN, end).append("</span></code>");
                     i = end;
                 }
                 default -> html.append(chars[i]);
@@ -429,6 +367,8 @@ public class Editor implements KeyListener, ActionListener {
         for (char aChar : chars) {
             try {
                 if (aChar == '\n') html.append("<br>");
+                    // spaces in html: blog.hubspot.com/website/html-space
+                else if (aChar == '\t') html.append("&nbsp;&nbsp;&nbsp;&nbsp;");
                 else html.append(aChar);
             } catch (IndexOutOfBoundsException e) {
                 System.out.println(e.getMessage());

@@ -281,6 +281,9 @@ public class Editor implements KeyListener, ActionListener {
         final int LEN = 5;
         int end = 0;
 
+        // fix glitch
+        if (n <= LEN) return content;
+
         for (int i = 0; i < n - LEN; i++) {
 
             // simple "formulas"

@@ -195,9 +195,7 @@ public class Section implements ActionListener {
                 CardLayout cardLayout = (CardLayout) (CARDS.getLayout());
                 cardLayout.show(CARDS, SECTION_NAME);
             }, DATABASE);
-        }
-
-        else {
+        } else {
 
             // edit section title
             if (e.getSource() == EDIT_BUTTON) {

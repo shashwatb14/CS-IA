@@ -219,6 +219,7 @@ public class Authentication implements ActionListener {
         resultPanel.add(newPasswordResult);
 
         // decrypt and setNewPassword non-static because of action listeners
+        passwordField.addActionListener(this);
         confirmPassword.addActionListener(this);
         createButton.addActionListener(this);
 
@@ -245,7 +246,12 @@ public class Authentication implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == confirmPassword || e.getSource() == createButton) {
+        if (e.getSource() == passwordField) {
+            // change focus to confirmPassword: https://stackoverflow.com/questions/1425392/how-do-you-set-a-focus-on-jtextfield-in-swing
+            confirmPassword.requestFocus();
+        }
+
+        else if (e.getSource() == confirmPassword || e.getSource() == createButton) {
             System.out.println("Creating new password..."); // debugging
 
             // constructing string

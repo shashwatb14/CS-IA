@@ -82,32 +82,7 @@ public class Authentication implements ActionListener {
         submitButton.addActionListener(this);
 
         // change mouse to pointer - https://stackoverflow.com/questions/7359189/how-to-change-the-mouse-cursor-in-java
-        submitButton.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                submitButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                submitButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                submitButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                submitButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                submitButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-        });
+        Main.changeCursor(submitButton, new Cursor(Cursor.HAND_CURSOR));
 
         // add title to frame
         titlePanel.add(new JLabel(title));
@@ -236,6 +211,7 @@ public class Authentication implements ActionListener {
 
         JPanel buttonPanel = new JPanel();
         createButton = new JButton("Create password");
+        Main.changeCursor(createButton, new Cursor(Cursor.HAND_CURSOR));
         buttonPanel.add(createButton);
 
         JPanel resultPanel = new JPanel();

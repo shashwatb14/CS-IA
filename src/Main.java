@@ -5,6 +5,7 @@
  */
 
 // Swing for GUI
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -44,7 +45,7 @@ public class Main {
         cards = new JPanel(new CardLayout());
         cards.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        List<Map> records = database.select("sections", new String[] {"sectionTitle"});
+        List<Map> records = database.select("sections", new String[]{"sectionTitle"});
 
         // automated creation based on sections in database
         for (int i = 0, n = records.size(); i < n; i++) {
@@ -83,10 +84,10 @@ public class Main {
         tabs.setBackground(Color.LIGHT_GRAY);
 
         // read sections from database
-        for (int i = 0, n = database.select("sections", new String[] {"sectionTitle"}).size(); i < n; i++) {
+        for (int i = 0, n = database.select("sections", new String[]{"sectionTitle"}).size(); i < n; i++) {
 
             Map record = database.select(
-                    "sections", new String[] {"sectionTitle", "isLocked"}
+                    "sections", new String[]{"sectionTitle", "isLocked"}
             ).get(i);
             new Section(
                     (String) record.get("sectionTitle"),
@@ -177,7 +178,7 @@ public class Main {
         createButton.addActionListener(e -> {
             String title = titleField.getText();
 
-            List<Map> records = database.select("sections", new String[] {"sectionTitle"});
+            List<Map> records = database.select("sections", new String[]{"sectionTitle"});
             boolean isValid = true;
 
             // ensure no duplicates when creating
@@ -191,7 +192,7 @@ public class Main {
             }
 
             // user might want to only lock section
-            if ( creating && title.isBlank()) {
+            if (creating && title.isBlank()) {
                 newTitlePanel.setText("Section title is blank");
                 newTitlePanel.setForeground(Color.RED);
                 isValid = false;
@@ -224,7 +225,7 @@ public class Main {
                 // otherwise editing
                 else {
                     database.update("sections", index, "sectionTitle = \"" + title +
-                                    "\", isLocked = \"" + values.get(1) + "\"");
+                            "\", isLocked = \"" + values.get(1) + "\"");
                     newTitlePanel.setText("Saving changes...");
                     newTitlePanel.setForeground(Color.GREEN);
                 }

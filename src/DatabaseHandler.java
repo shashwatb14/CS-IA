@@ -209,7 +209,7 @@ public class DatabaseHandler {
     public void update(String tableName, int index, String updatedContent) {
 
         try {
-            String statement = "UPDATE " + tableName + " SET " + updatedContent + " WHERE counter = " + index;
+            String statement = "UPDATE " + tableName + " SET " + updatedContent + " WHERE id = " + index;
             System.out.println(statement);
             this.connection.createStatement().execute(statement);
         } catch (SQLException e) {

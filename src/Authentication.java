@@ -185,7 +185,7 @@ public class Authentication implements ActionListener {
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 
             // database handler to retrieve password
-            Map intel = authApp.select("authentication", new String[] {"encryptedText"}).get(0);
+            Map intel = authApp.select("authentication", new String[]{"encryptedText"}).get(0);
 
             // reconstruct secret key
             // decipher from file
@@ -291,7 +291,7 @@ public class Authentication implements ActionListener {
 
             // validation and confirmation checks
             if (firstPassword.length() < 3 || firstPassword.length() > 20 ||
-                secondPassword.length() < 3 || secondPassword.length() > 20) {
+                    secondPassword.length() < 3 || secondPassword.length() > 20) {
 
                 System.out.println("Invalid length"); // debugging
 

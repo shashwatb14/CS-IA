@@ -185,7 +185,7 @@ public class Authentication implements ActionListener {
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 
             // database handler to retrieve password
-            Map<String, String> intel = authApp.select("authentication", new String[] {"encryptedText"}).get(0);
+            Map intel = authApp.select("authentication", new String[] {"encryptedText"}).get(0);
 
             // reconstruct secret key
             // decipher from file
@@ -197,7 +197,7 @@ public class Authentication implements ActionListener {
 
             cipher.init(Cipher.DECRYPT_MODE, newKey, IV_PARAMETER_SPEC); // initialization vector required
 
-            byte[] encryptedText = Base64.getDecoder().decode(intel.get("encryptedText"));
+            byte[] encryptedText = Base64.getDecoder().decode(intel.get("encryptedText").toString());
             decryptedText = cipher.doFinal(encryptedText);
         } catch (IndexOutOfBoundsException error) {
             // first time password setup
@@ -247,21 +247,7 @@ public class Authentication implements ActionListener {
         createButton.addActionListener(this);
 
         mainPanel.add(titlePanel);
-        mainPanel.add(passwordPanel);
-        mainPanel.add(confirmPanel);
-        mainPanel.add(buttonPanel);
-        mainPanel.add(resultPanel);
-
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
-        setPasswordFrame.setResizable(false); // disables maximize button
-        setPasswordFrame.setVisible(true);
-        setPasswordFrame.setLayout(new FlowLayout());
-        setPasswordFrame.add(mainPanel);
-        setPasswordFrame.pack();
-        setPasswordFrame.setLocationRelativeTo(null); // puts frame in the middle
-        setPasswordFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        Main.buildPanel(setPasswordFrame, mainPanel, passwordPanel, confirmPanel, buttonPanel, resultPanel);
     }
 
     private SecretKey generateKey() {
@@ -332,6 +318,13 @@ public class Authentication implements ActionListener {
                 encryptedPassword.add(encryptedText);
 
                 authApp.insert("authentication", "encryptedText", encryptedPassword);
+
+                // add default sections since setting up for the first time
+                authApp.customStatementVoid("sections", "INSERT INTO sections(sectionTitle, isLocked) VALUES('Personal Information', 'TRUE');");
+                authApp.customStatementVoid("sections", "INSERT INTO sections(sectionTitle, isLocked) VALUES('Individual Productivity', 'FALSE');");
+                authApp.customStatementVoid("sections", "INSERT INTO sections(sectionTitle, isLocked) VALUES('Office Workspace', 'FALSE');");
+                authApp.customStatementVoid("sections", "INSERT INTO sections(sectionTitle, isLocked) VALUES('Self-Learning', 'FALSE');");
+                authApp.customStatementVoid("sections", "INSERT INTO sections(sectionTitle, isLocked) VALUES('Family Travel', 'FALSE');");
 
                 newPasswordResult.setText("Success");
                 newPasswordResult.setForeground(Color.GREEN);

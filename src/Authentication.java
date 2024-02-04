@@ -187,7 +187,7 @@ public class Authentication implements ActionListener {
     private void setNewPassword() {
 
         // create GUI
-        setPasswordFrame = new JFrame();
+        setPasswordFrame = new JFrame("Authentication");
 
         // main password field
         JPanel mainPanel = new JPanel();
@@ -215,7 +215,7 @@ public class Authentication implements ActionListener {
         buttonPanel.add(createButton);
 
         JPanel resultPanel = new JPanel();
-        newPasswordResult = new JLabel("Create new password");
+        newPasswordResult = new JLabel("");
         resultPanel.add(newPasswordResult);
 
         // decrypt and setNewPassword non-static because of action listeners

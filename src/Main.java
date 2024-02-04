@@ -40,7 +40,7 @@ public class Main {
         }, database);
     }
 
-    private static void buildApplication() {
+    public static void buildApplication() {
         cards = new JPanel(new CardLayout());
         cards.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
@@ -115,13 +115,13 @@ public class Main {
 
         addButton.addActionListener(e -> {
             System.out.println("Adding new space...");
-            createSection(newSection("Create new section", "Create section"), true, 0);
+            createSection(newSection("Create new section", "Create section", false, null, null), true, 0);
         });
 
         return addButton;
     }
 
-    public static Map<String, Object> newSection(String title, String buttonLabel) {
+    public static Map<String, Object> newSection(String title, String buttonLabel, boolean editing, String sectionTitle, Boolean locked) {
         // create GUI
         JFrame newSectionFrame = new JFrame("Section");
 
@@ -134,11 +134,13 @@ public class Main {
 
         JPanel sectionTitlePanel = new JPanel();
         JTextField titleField = new JTextField(20);
+        if (editing) titleField.setText(sectionTitle);
         sectionTitlePanel.add(new JLabel("Enter section title: "));
         sectionTitlePanel.add(titleField);
 
         JPanel checkBoxPanel = new JPanel();
         JCheckBox isLocked = new JCheckBox();
+        if (editing && locked) isLocked.setSelected(true);
         changeCursor(isLocked, new Cursor(Cursor.HAND_CURSOR));
         checkBoxPanel.add(new JLabel("Is Locked: "));
         checkBoxPanel.add(isLocked);
@@ -164,7 +166,7 @@ public class Main {
         return components;
     }
 
-    public static void createSection(Map<String, Object> components, boolean creating, int index) {
+    public static void createSection(Map<String, Object> components, boolean creating, Integer index) {
 
         JButton createButton = (JButton) components.get("createButton");
         JTextField titleField = (JTextField) components.get("titleField");
@@ -178,9 +180,9 @@ public class Main {
             List<Map> records = database.select("sections", new String[] {"sectionTitle"});
             boolean isValid = true;
 
-            // ensure no duplicates
-            for (Map record : records) {
-                if (record.get("sectionTitle").toString().equalsIgnoreCase(title)) {
+            // ensure no duplicates when creating
+            for (int i = 0, n = records.size(); i < n; i++) {
+                if (i != (index - 1) && records.get(i).get("sectionTitle").toString().equalsIgnoreCase(title.strip())) {
                     isValid = false;
                     newTitlePanel.setText("Section title already exists");
                     newTitlePanel.setForeground(Color.RED);
@@ -189,14 +191,14 @@ public class Main {
             }
 
             // user might want to only lock section
-            if (creating && title.isBlank()) {
+            if ( creating && title.isBlank()) {
                 newTitlePanel.setText("Section title is blank");
                 newTitlePanel.setForeground(Color.RED);
                 isValid = false;
             }
 
-            if (title.length() > 20) {
-                newTitlePanel.setText("Section title is too long (" + (title.length() - 20) + " character(s) longer)");
+            if (title.length() > 40) {
+                newTitlePanel.setText("Section title is too long (" + (title.length() - 40) + " character(s) longer)");
                 newTitlePanel.setForeground(Color.RED);
                 isValid = false;
             }
@@ -271,6 +273,10 @@ public class Main {
         mainPanel.add(buttonPanel);
         mainPanel.add(resultPanel);
 
+        buildDialogBox(newSectionFrame, mainPanel);
+    }
+
+    static void buildDialogBox(JFrame newSectionFrame, JPanel mainPanel) {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 

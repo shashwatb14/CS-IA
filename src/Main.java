@@ -141,6 +141,8 @@ public class Main {
 
         JPanel checkBoxPanel = new JPanel();
         JCheckBox isLocked = new JCheckBox();
+
+        // setting checkboxes: https://www.codejava.net/java-se/swing/jcheckbox-basic-tutorial-and-examples
         if (editing && locked) isLocked.setSelected(true);
         changeCursor(isLocked, new Cursor(Cursor.HAND_CURSOR));
         checkBoxPanel.add(new JLabel("Is Locked: "));

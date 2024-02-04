@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -114,22 +115,22 @@ public class Main {
 
         addButton.addActionListener(e -> {
             System.out.println("Adding new space...");
-            addSection();
+            createSection(newSection("Create new section", "Create section"), true, 0);
         });
 
         return addButton;
     }
 
-    private static void addSection() {
+    public static Map<String, Object> newSection(String title, String buttonLabel) {
         // create GUI
-        JFrame newSectionFrame = new JFrame();
+        JFrame newSectionFrame = new JFrame("Section");
 
         // main password field
         JPanel mainPanel = new JPanel();
 
         // title panel
         JPanel titlePanel = new JPanel();
-        titlePanel.add(new JLabel("Create new section"));
+        titlePanel.add(new JLabel(title));
 
         JPanel sectionTitlePanel = new JPanel();
         JTextField titleField = new JTextField(20);
@@ -143,7 +144,7 @@ public class Main {
         checkBoxPanel.add(isLocked);
 
         JPanel buttonPanel = new JPanel();
-        JButton createButton = new JButton("Create section");
+        JButton createButton = new JButton(buttonLabel);
         changeCursor(createButton, new Cursor(Cursor.HAND_CURSOR));
         buttonPanel.add(createButton);
 
@@ -151,12 +152,33 @@ public class Main {
         JLabel newTitlePanel = new JLabel("");
         resultPanel.add(newTitlePanel);
 
+        mainPanel.add(titlePanel);
+        buildPanel(newSectionFrame, mainPanel, sectionTitlePanel, checkBoxPanel, buttonPanel, resultPanel);
+
+        Map<String, Object> components = new HashMap<>();
+        components.put("createButton", createButton);
+        components.put("titleField", titleField);
+        components.put("newTitlePanel", newTitlePanel);
+        components.put("isLocked", isLocked);
+        components.put("newSectionFrame", newSectionFrame);
+        return components;
+    }
+
+    public static void createSection(Map<String, Object> components, boolean creating, int index) {
+
+        JButton createButton = (JButton) components.get("createButton");
+        JTextField titleField = (JTextField) components.get("titleField");
+        JLabel newTitlePanel = (JLabel) components.get("newTitlePanel");
+        JCheckBox isLocked = (JCheckBox) components.get("isLocked");
+        JFrame newSectionFrame = (JFrame) components.get("newSectionFrame");
+
         createButton.addActionListener(e -> {
             String title = titleField.getText();
 
             List<Map> records = database.select("sections", new String[] {"sectionTitle"});
             boolean isValid = true;
 
+            // ensure no duplicates
             for (Map record : records) {
                 if (record.get("sectionTitle").toString().equalsIgnoreCase(title)) {
                     isValid = false;
@@ -166,7 +188,8 @@ public class Main {
                 }
             }
 
-            if (title.isBlank()) {
+            // user might want to only lock section
+            if (creating && title.isBlank()) {
                 newTitlePanel.setText("Section title is blank");
                 newTitlePanel.setForeground(Color.RED);
                 isValid = false;
@@ -189,20 +212,28 @@ public class Main {
                 if (isLocked.isSelected()) values.add("TRUE");
                 else values.add("FALSE");
 
-                // create new section
-                database.insert("sections", "sectionTitle, isLocked", values);
+                if (creating) {
+                    // create new section
+                    database.insert("sections", "sectionTitle, isLocked", values);
+                    newTitlePanel.setText("Creating new section...");
+                    newTitlePanel.setForeground(Color.GREEN);
+                }
 
-                newTitlePanel.setText("Creating new section...");
-                newTitlePanel.setForeground(Color.GREEN);
+                // otherwise editing
+                else {
+                    database.update("sections", index, "sectionTitle = \"" + title +
+                                    "\", isLocked = \"" + values.get(1) + "\"");
+                    newTitlePanel.setText("Saving changes...");
+                    newTitlePanel.setForeground(Color.GREEN);
+                }
 
                 // rebuild
                 buildApplication();
 
                 newSectionFrame.dispatchEvent(new WindowEvent(newSectionFrame, WindowEvent.WINDOW_CLOSING));
+
             }
         });
-
-        buildPanel(newSectionFrame, mainPanel, sectionTitlePanel, checkBoxPanel, buttonPanel, resultPanel);
     }
 
     public static void changeCursor(JComponent jComponent, Cursor cursor) {

@@ -135,7 +135,8 @@ public class DatabaseHandler {
     }
 
     // method for insertion
-    // multiple data types storage - https://stackoverflow.com/questions/26162183/java-multiple-type-data-structure
+    // multiple data types storage
+    // https://stackoverflow.com/questions/26162183/java-multiple-type-data-structure
     public void insert(String tableName, String columns, List<Object> values) {
 
         // values list
@@ -153,7 +154,7 @@ public class DatabaseHandler {
             for (int i = 0, n = values.size(); i < n; i++) {
 
                 // check class: cwe.mitre.org/data/definitions/486.html
-                // can only be either string for this prototype
+                // can only be either string or double for this prototype
                 if (values.get(i).getClass().getName().equals("java.lang.String")) {
                     preparedStatement.setString(i + 1, values.get(i).toString());
                 } else preparedStatement.setDouble(i + 1, (int) values.get(i));

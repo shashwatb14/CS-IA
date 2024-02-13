@@ -114,7 +114,7 @@ public class Editor implements KeyListener, ActionListener {
             }
         });
         EDITOR_PANE.setFont(new Font(Font.SERIF, Font.PLAIN, 14));
-        EDITOR_PANE.setText(convertTextToHtml(content)); // https://www.tutorialspoint.com/how-to-set-font-for-text-in-jtextpane-with-java
+        EDITOR_PANE.setText(convertTextToHtml(content)); // https://www.tutorialspoint.com/how-to-set-font-for-text-in-jtextpane-with-javaw
         EDITOR_PANE.addKeyListener(this);
         EDITOR_PANE.setEditable(false);
         EDITOR_PANE.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));

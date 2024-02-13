@@ -227,7 +227,7 @@ public class Authentication implements ActionListener {
         Main.buildPanel(setPasswordFrame, mainPanel, passwordPanel, confirmPanel, buttonPanel, resultPanel);
     }
 
-    private SecretKey generateKey() {
+    private SecretKey generateSecretKey() {
         try {
             KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
             SecretKey secretKey = keyGenerator.generateKey();
@@ -278,7 +278,7 @@ public class Authentication implements ActionListener {
                 newPasswordResult.setText("Invalid Length");
                 newPasswordResult.setForeground(Color.RED);
 
-            } else if (firstPassword.toString().length() != secondPassword.toString().length()) {
+            } else if (password1.length != password2.length) {
                 System.out.println("Different lengths for password...");
 
                 System.out.println(firstPassword.toString().length());
@@ -291,7 +291,7 @@ public class Authentication implements ActionListener {
                 System.out.println("Success! Creating new password..."); // debugging
 
                 // update database
-                SecretKey secretKey = generateKey();
+                SecretKey secretKey = generateSecretKey();
                 String encryptedText = encryptPassword(String.valueOf(firstPassword), secretKey);
 
                 List<Object> encryptedPassword = new ArrayList<>();
@@ -343,14 +343,8 @@ public class Authentication implements ActionListener {
                 // generate secure key for AES encryption
                 // source - https://stackoverflow.com/questions/51770704/java-aes-decryption-code-is-not-working-invalidexception-1234444
 
-                SecretKey secretKey = generateKey();
-
+                SecretKey secretKey = generateSecretKey();
                 String encryptedText = encryptPassword(String.valueOf(password), secretKey);
-
-                /* for reset/debugging
-                List<Object> encryptedPassword = new ArrayList<>();
-                encryptedPassword.add(encryptedText);
-                AUTH_APP.insert("authentication", "encryptedText", encryptedPassword);*/
 
                 // update database
                 authApp.update("authentication", 1, "encryptedText = \"" + encryptedText + "\"");

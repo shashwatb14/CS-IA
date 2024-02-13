@@ -11,10 +11,8 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class Main {
 
@@ -29,9 +27,9 @@ public class Main {
         database.select("authentication", true);
 
         // to reset application
-        database.reset("authentication");
+        /* database.reset("authentication");
         database.reset("sections");
-        database.reset("notes");
+        database.reset("notes");*/
 
         // Authentication test
         // polymorphism
@@ -42,6 +40,9 @@ public class Main {
     }
 
     public static void buildApplication() {
+
+        // dispose of previous frame if exists: https://stackoverflow.com/questions/15733587/destroy-jframe-object
+        if (mainFrame != null) mainFrame.dispose();
         cards = new JPanel(new CardLayout());
         cards.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
@@ -103,7 +104,7 @@ public class Main {
 
         JScrollPane menu = new JScrollPane(tabs);
         menu.setLayout(new ScrollPaneLayout());
-        menu.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        menu.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         menu.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 
         mainFrame.add(menu, BorderLayout.WEST);
@@ -180,12 +181,14 @@ public class Main {
         createButton.addActionListener(e -> {
             String title = titleField.getText();
 
-            List<Map> records = database.select("sections", new String[]{"sectionTitle"});
+            List<Map> records = database.select("sections", new String[]{"id", "sectionTitle"});
             boolean isValid = true;
 
             // ensure no duplicates when creating
-            for (int i = 0, n = records.size(); i < n; i++) {
-                if (i != (index - 1) && records.get(i).get("sectionTitle").toString().equalsIgnoreCase(title.strip())) {
+            for (Map record : records) {
+                if (!Objects.equals(record.get("id").toString(), index.toString()) &&
+                        record.get("sectionTitle").toString().equalsIgnoreCase(title.strip())) {
+                    System.out.println(record.get("id") + ", " + (index - 1));
                     isValid = false;
                     newTitlePanel.setText("Section title already exists");
                     newTitlePanel.setForeground(Color.RED);
@@ -234,9 +237,7 @@ public class Main {
 
                 // rebuild
                 buildApplication();
-
                 newSectionFrame.dispatchEvent(new WindowEvent(newSectionFrame, WindowEvent.WINDOW_CLOSING));
-
             }
         });
     }
@@ -279,7 +280,7 @@ public class Main {
         buildDialogBox(newSectionFrame, mainPanel);
     }
 
-    static void buildDialogBox(JFrame newSectionFrame, JPanel mainPanel) {
+    public static void buildDialogBox(JFrame newSectionFrame, JPanel mainPanel) {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 

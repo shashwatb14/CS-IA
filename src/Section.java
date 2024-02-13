@@ -103,7 +103,6 @@ public class Section implements ActionListener {
         JPanel warnings = new JPanel();
         warnings.setLayout(new BoxLayout(warnings, BoxLayout.Y_AXIS));
 
-
         JPanel warningTitle = new JPanel();
         JPanel warningPanel1 = new JPanel();
         JPanel warningPanel2 = new JPanel();
@@ -134,11 +133,14 @@ public class Section implements ActionListener {
             values.add(this.SECTION_ID);
             values.add(this.SECTION_NAME);
             values.add((this.LOCKED) ? "TRUE" : "FALSE");
+
             DATABASE.insert("archive", "id, sectionTitle, isLocked", values);
             DATABASE.delete("sections", this.SECTION_NAME);
+
             Main.buildApplication();
             archiveFrame.dispatchEvent(new WindowEvent(archiveFrame, WindowEvent.WINDOW_CLOSING));
         });
+
         cancelArchive.addActionListener(e -> archiveFrame.dispatchEvent(new WindowEvent(archiveFrame, WindowEvent.WINDOW_CLOSING)));
 
         Main.changeCursor(confirmArchive, new Cursor(Cursor.HAND_CURSOR));
@@ -188,7 +190,6 @@ public class Section implements ActionListener {
                     System.out.println("Archiving " + this.SECTION_NAME);
                     archive();
                 }
-
 
                 // change view and give access to notes regardless if authentication is successful
                 // card layout and switching: https://docs.oracle.com/javase%2Ftutorial%2Fuiswing%2F%2F/layout/card.html

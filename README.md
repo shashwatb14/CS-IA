@@ -20,4 +20,5 @@ Utilizes Java Swing for GUI and `sqlite3` for data management.
 
 Before running, change file path of `SecretFile.key` in `Authentication.java` (lines `168` and `236`) as required.
 
-Still in early development stages.
+Very early development stages. This repository has been archived.
+Product will continue being developed in [this repository](https://github.com/shashwatb14/note-taker).
